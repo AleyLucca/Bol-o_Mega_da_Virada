@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meus Jogos</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0b6623;margin:0;padding:15px;color:#fff}
+.container{max-width:900px;margin:auto;background:#0f7a2f;padding:15px;border-radius:10px}
+h1{text-align:center}
+
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:10px}
+.numero{background:#fff;color:#000;padding:10px;border-radius:50%;text-align:center;cursor:pointer;font-weight:bold}
+.numero.selecionado{background:#ffd700}
+
+button,a{
+  margin-top:15px;padding:12px;width:100%;
+  border:none;border-radius:6px;font-weight:bold;
+  display:block;text-align:center;text-decoration:none;cursor:pointer
+}
+.btn-add{background:#ffd700;color:#000}
+.btn-remover{background:#d9534f;color:#fff;margin-top:8px}
+
+.box{background:#fff;color:#000;padding:12px;border-radius:6px;margin-top:20px}
+.jogo{padding:10px;border-bottom:1px solid #ccc}
+
+.bola{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;margin:3px;border-radius:50%;
+  background:radial-gradient(circle at top,#5cff8d,#0b6623);
+  color:#fff;font-weight:bold
+}
+
+/* RESPONSIVO */
+@media (max-width:600px){
+  .grid{grid-template-columns:repeat(6,1fr)}
+  .bola,.numero{width:28px;height:28px;font-size:12px;padding:6px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>📋 Meus Jogos</h1>
+
+<a href="index.html">🎯 Voltar para conferência</a>
+
+<div id="grid" class="grid"></div>
+<button class="btn-add" onclick="adicionar()">Adicionar jogo</button>
+
+<div id="lista" class="box"></div>
+</div>
+
+<script>
+let jogos = JSON.parse(localStorage.getItem('jogosMega')) || [];
+const selecionados = [];
+const SENHA = '1234';
+
+function criarGrid(){
+  const g=document.getElementById('grid');
+  for(let i=1;i<=60;i++){
+    const d=document.createElement('div');
+    d.className='numero';
+    d.textContent=String(i).padStart(2,'0');
+    d.onclick=()=>{
+      if(selecionados.includes(d.textContent)){
+        selecionados.splice(selecionados.indexOf(d.textContent),1);
+        d.classList.remove('selecionado');
+      }else{
+        selecionados.push(d.textContent);
+        d.classList.add('selecionado');
+      }
+    };
+    g.appendChild(d);
+  }
+}
+
+function adicionar(){
+  if(selecionados.length<6){alert('Selecione pelo menos 6 números');return;}
+  jogos.push([...selecionados].sort());
+  selecionados.length=0;
+  document.querySelectorAll('.numero').forEach(n=>n.classList.remove('selecionado'));
+  salvar();
+}
+
+function remover(index){
+  const senha=prompt('Digite a senha para excluir o jogo:');
+  if(senha!==SENHA){alert('Senha incorreta');return;}
+  jogos.splice(index,1);
+  salvar();
+}
+
+function salvar(){
+  localStorage.setItem('jogosMega',JSON.stringify(jogos));
+  render();
+}
+
+function render(){
+  const l=document.getElementById('lista');
+  if(jogos.length===0){l.innerHTML='Nenhum jogo cadastrado';return;}
+  l.innerHTML=jogos.map((j,i)=>{
+    const bolas=j.map(n=>`<span class="bola">${n}</span>`).join('');
+    return `<div class="jogo">
+      <strong>Jogo ${i+1}</strong><br>${bolas}
+      <button class="btn-remover" onclick="remover(${i})">Excluir jogo</button>
+    </div>`;
+  }).join('');
+}
+
+criarGrid();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferir Mega da Virada</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0b6623;margin:0;padding:15px;color:#fff}
+.container{max-width:900px;margin:auto;background:#0f7a2f;padding:15px;border-radius:10px}
+h1,h2{text-align:center}
+
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:10px}
+.numero{background:#fff;color:#000;padding:10px;border-radius:50%;text-align:center;cursor:pointer;font-weight:bold}
+.numero.selecionado{background:#ffd700}
+
+button,a{
+  margin-top:15px;padding:12px;width:100%;
+  border:none;border-radius:6px;font-weight:bold;
+  display:block;text-align:center;text-decoration:none;cursor:pointer
+}
+.btn-add{background:#ffd700;color:#000}
+
+.box{background:#fff;color:#000;padding:12px;border-radius:6px;margin-top:20px}
+.jogo{padding:10px;border-bottom:1px solid #ccc}
+
+.bola{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;margin:3px;border-radius:50%;
+  background:#ccc;color:#000;font-weight:bold
+}
+.bola.acertou{
+  background:radial-gradient(circle at top,#5cff8d,#0b6623);
+  color:#fff;
+  animation:pulse 0.6s ease-in-out infinite alternate
+}
+
+@keyframes pulse{
+  from{transform:scale(1)}
+  to{transform:scale(1.15)}
+}
+
+.premio{margin-top:8px;font-weight:bold;color:#0b6623}
+
+/* RESPONSIVO */
+@media (max-width:600px){
+  .grid{grid-template-columns:repeat(6,1fr)}
+  .bola,.numero{width:28px;height:28px;font-size:12px;padding:6px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎯 Conferir Mega da Virada</h1>
+
+<a href="jogos.html">📋 Ir para meus jogos</a>
+
+<h2>Selecione os 6 números sorteados</h2>
+<div id="gridSorteados" class="grid"></div>
+<button class="btn-add" onclick="conferirJogos()">Conferir jogos</button>
+
+<div id="resultado" class="box"></div>
+</div>
+
+<script>
+const jogos = JSON.parse(localStorage.getItem('jogosMega')) || [];
+const selecionados = [];
+
+function criarGrid(){
+  const grid=document.getElementById('gridSorteados');
+  for(let i=1;i<=60;i++){
+    const d=document.createElement('div');
+    d.className='numero';
+    d.textContent=String(i).padStart(2,'0');
+    d.onclick=()=>{
+      if(selecionados.includes(d.textContent))return;
+      if(selecionados.length>=6)return;
+      selecionados.push(d.textContent);
+      d.classList.add('selecionado');
+    };
+    grid.appendChild(d);
+  }
+}
+
+function conferirJogos(){
+  if(selecionados.length!==6){alert('Selecione exatamente 6 números');return;}
+  const r=document.getElementById('resultado');
+  r.innerHTML=jogos.map((jogo,i)=>{
+    let acertos=0;
+    const bolas=jogo.map(n=>{
+      if(selecionados.includes(n)){acertos++; return `<span class="bola acertou">${n}</span>`;}
+      return `<span class="bola">${n}</span>`;
+    }).join('');
+
+    let premio='';
+    if(acertos===4)premio='🎉 Quadra';
+    if(acertos===5)premio='💰 Quina';
+    if(acertos===6)premio='🏆 Sena';
+
+    return `<div class="jogo">
+      <strong>Jogo ${i+1}</strong><br>
+      ${bolas}
+      ${premio?`<div class="premio">${premio}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+criarGrid();
+</script>
+</body>
+</html>
